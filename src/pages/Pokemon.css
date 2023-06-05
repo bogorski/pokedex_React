@@ -1,0 +1,18 @@
+.hp {
+	background-color: #845ec2 !important;
+}
+.attack {
+	background-color: #d65db1 !important;
+}
+.defense {
+	background-color: #ff6f91 !important;
+}
+.special-attack {
+	background-color: #ff9671 !important;
+}
+.special-defense {
+	background-color: #ffc75f !important;
+}
+.speed {
+	background-color: #f9f871 !important;
+}
