@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { addPokemon } from "../redux/pokemonDataSlice";
 import { changeUrl } from "../redux/currentUrlSlice";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,9 +10,11 @@ import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
 import { useNavigate, useLocation } from "react-router-dom";
 import { changeScroll } from "../redux/scrollTopSlice";
+
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
 function ItemStyle({ number }) {
 	if (number.toString().length === 1) {
 		return (
@@ -30,22 +32,24 @@ function ItemStyle({ number }) {
 		return <Card.Subtitle className="mb-2 text-muted">#{number}</Card.Subtitle>;
 	}
 }
+
 function Home() {
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const [error, setError] = useState(null);
 	const [onClickBtn, setOnClickBtn] = useState(false);
 	const [isLoaded, setIsLoaded] = useState(false);
-	const navigate = useNavigate();
-	const { pathname } = useLocation();
+	const pokemonData = useSelector((state) => state.pokemonData.pokemon);
+	const currentUrl = useSelector((state) => state.currentUrl.valueCurrent);
+	const nextUrl = useSelector((state) => state.currentUrl.valueNext);
+	const valueScrollTop = useSelector((state) => state.scrollTop.value);
+
 	function handleSubmit(e) {
 		const scrollTop = document.documentElement.scrollTop;
 		dispatch(changeScroll(scrollTop));
 		navigate(`/pokemon/${e.currentTarget.id}`);
 	}
-	const pokemonData = useSelector((state) => state.pokemonData.pokemon);
-	const dispatch = useDispatch();
-	const currentUrl = useSelector((state) => state.currentUrl.valueCurrent);
-	const nextUrl = useSelector((state) => state.currentUrl.valueNext);
-	const valueScrollTop = useSelector((state) => state.scrollTop.value);
+
 	const fetchData = async (url) => {
 		const scrollTop = document.documentElement.scrollTop;
 		dispatch(changeScroll(scrollTop));
@@ -64,15 +68,14 @@ function Home() {
 				responses.map((response) => detailData.push(response));
 			});
 			setIsLoaded(true);
-			console.log(detailData, "data");
 			dispatch(addPokemon(detailData));
 			dispatch(changeUrl(listData.next));
 			setOnClickBtn(false);
 		} catch (error) {
-			//	console.log("There was a SyntaxError", error);
 			setError(error);
 		}
 	};
+
 	let button;
 	if (onClickBtn === false) {
 		button = (
@@ -103,13 +106,12 @@ function Home() {
 			</div>
 		);
 	}
+
 	useEffect(() => {
 		pokemonData.length === 0 ? fetchData(currentUrl) : setIsLoaded(true);
-
 		window.scrollTo(0, valueScrollTop);
-
-		console.log(valueScrollTop);
 	}, [fetchData]);
+
 	if (error) {
 		return <div>Error: {error.message}</div>;
 	} else if (!isLoaded) {
@@ -142,7 +144,7 @@ function Home() {
 								<Card
 									style={{ cursor: "pointer" }}
 									onClick={handleSubmit}
-									id={data.id}
+									id={data.name}
 								>
 									<Card.Img
 										className="mx-auto"
@@ -157,7 +159,6 @@ function Home() {
 										<ItemStyle number={data.id} />
 										<Row>
 											{data.types.map((type, id) => {
-												console.log(data.types.length, "totoot");
 												if (data.types.length === 1) {
 													return (
 														<Col

@@ -6,17 +6,14 @@ export default function RadarStats({ hp, at, de, sa, sd, sp }) {
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext("2d");
-		//let canvasWidth;
 		const handleResize = (e) => {
 			window.innerWidth < 400
 				? setCanvasWidth(window.innerWidth / 1.4)
 				: setCanvasWidth(320);
-			console.log("resized to: ", window.innerWidth, "x", window.innerHeight);
 		};
 		handleResize();
 		window.addEventListener("resize", handleResize);
 
-		console.log(canvasWidth);
 		canvas.width = canvasWidth;
 		canvas.height = canvasWidth;
 		ctx.fillStyle = "white"; //"#b0a8b9";
@@ -35,7 +32,6 @@ export default function RadarStats({ hp, at, de, sa, sd, sp }) {
 		}
 
 		let scale = (r - 30) / (Math.ceil(maxStat / iScale) * iScale);
-		console.log(scale, "scale");
 
 		// statystyki pokemona
 		ctx.beginPath();
@@ -91,7 +87,6 @@ export default function RadarStats({ hp, at, de, sa, sd, sp }) {
 		const circleRadius = Math.ceil(maxStat / iScale) * iScale * scale;
 		ctx.beginPath();
 		ctx.font = "bold 12px Arial";
-		//ctx.fillStyle = "red";
 		ctx.strokeStyle = "#b0a8b9"; //"#fef7ff";
 		ctx.lineWidth = 1.5;
 		ctx.moveTo(r, r);

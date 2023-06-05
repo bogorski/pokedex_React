@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import Spinner from "react-bootstrap/Spinner";
 import Row from "react-bootstrap/Row";
@@ -8,18 +7,15 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/esm/Container";
 import Image from "react-bootstrap/Image";
 import Nav from "react-bootstrap/Nav";
-import NavDropdown from "react-bootstrap/NavDropdown";
-import Button from "react-bootstrap/esm/Button";
 import ListGroup from "react-bootstrap/ListGroup";
 import ListGroupItem from "react-bootstrap/ListGroupItem";
 import RadarStats from "../components/Canvas";
 import "./Pokemon.css";
-function decimalPoint(value) {
-	return (value / 10).toFixed(1);
-}
+
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
 function ItemStyle({ number }) {
 	if (number.toString().length === 1) {
 		return <h3 className="mb-2 text-muted">#000{number}</h3>;
@@ -31,6 +27,7 @@ function ItemStyle({ number }) {
 		return <h3 className="mb-2 text-muted">#{number}</h3>;
 	}
 }
+
 function EvoCol({ className, xs, md, style, src, alt, onClick }) {
 	return (
 		<Col className={className} xs={xs} md={md}>
@@ -53,21 +50,17 @@ function EvoCol({ className, xs, md, style, src, alt, onClick }) {
 }
 function evolves(data, dataSprite, onClick) {
 	const evoTab = []; // tablica rozgalezienia ewolucji 0 - brak, 1- jeden rodzaj ewolucji...
+
 	function evolvesTo(dataEvolves, tab) {
 		tab.push(dataEvolves.evolves_to.length);
-		//tab = [...dataEvolves, ...dataSprite];
 		if (dataEvolves.evolves_to) {
 			dataEvolves.evolves_to.map((evo) => {
 				return evolvesTo(evo, tab);
 			});
 		}
 	}
-	console.log(data, "data głowna");
-	function evolve(data, tablica) {
-		console.log(data, "data");
-		console.log(data.evolves_to, "data w funkcji");
-		console.log(tablica, "tablica");
 
+	function evolve(data, tablica) {
 		if (data.evolves_to.length === 0) {
 			tablica.push({
 				evolve: false,
@@ -81,47 +74,30 @@ function evolves(data, dataSprite, onClick) {
 				sprite: dataSprite[0].sprites.other["official-artwork"].front_default,
 			});
 			data.evolves_to.map((el, i) => {
-				console.log(el.evolves_to.length, "el");
 				if (el.evolves_to.length === 0) {
-					/*tablica.push({
-						evolve: true,
-						name: el.species.name,
-						sprite:
-							dataSprite[i].sprites.other["official-artwork"].front_default,
-					});*/
-					tablica.push({
+					return tablica.push({
 						evolve: false,
 						name: el.species.name,
 						sprite:
 							dataSprite[i].sprites.other["official-artwork"].front_default,
 					});
 				} else {
-					evolve(el, tablica);
+					return evolve(el, tablica);
 				}
 			});
-			//tablica.push({ evolve: true, evolves_to: [...data.evolves_to] });
 		}
 	}
 	const tablica = [];
 	evolve(data.chain, tablica);
-	//const evolution = [...data.chain.evolves_to];
-	console.log(tablica, "tablica");
-	//const tablica = [...data, ...dataSprite];
-	//console.log(data, "tablica");
-	//console.log(dataSprite);
 	evolvesTo(data.chain, evoTab);
-	//console.log(evoTab, "dataEvolves");
 	let maxLevelEvolution = 1; // mogą być max 3 poziomy ewolucji
 	evoTab.map((el) => {
 		if (el > 0 && maxLevelEvolution < 3) {
 			return maxLevelEvolution++;
 		}
+		return 0;
 	});
-	console.log(evoTab, "evoTab");
-	console.log(data, "data");
-	console.log(dataSprite, "dataSprite");
 	if (maxLevelEvolution === 1) {
-		console.log("if OK");
 		return (
 			<Row>
 				<EvoCol
@@ -173,6 +149,7 @@ function evolves(data, dataSprite, onClick) {
 											/>
 										);
 									}
+									return 0;
 								})}
 							</Row>
 						</Col>
@@ -219,6 +196,7 @@ function evolves(data, dataSprite, onClick) {
 											/>
 										);
 									}
+									return 0;
 								})}
 							</Row>
 						) : (
@@ -236,6 +214,7 @@ function evolves(data, dataSprite, onClick) {
 											/>
 										);
 									}
+									return 0;
 								})}
 							</Row>
 						)}
@@ -243,7 +222,6 @@ function evolves(data, dataSprite, onClick) {
 				</Row>
 			);
 		}
-		console.log("2 poziomy ewolucji");
 	} else {
 		if (dataSprite.length === 3) {
 			return (
@@ -291,7 +269,7 @@ function evolves(data, dataSprite, onClick) {
 								<Col className="text-center p-2" xs={12} md={6}>
 									<Row>
 										{dataSprite.map((el, i) => {
-											if (i > 1 && data.chain.evolves_to[i]) {
+											if (i > 1) {
 												return (
 													<EvoCol
 														key={i}
@@ -306,6 +284,7 @@ function evolves(data, dataSprite, onClick) {
 													/>
 												);
 											}
+											return 0;
 										})}
 									</Row>
 								</Col>
@@ -343,6 +322,7 @@ function evolves(data, dataSprite, onClick) {
 											</Col>
 										);
 									}
+									return 0;
 								})}
 							</Row>
 						)}
@@ -350,11 +330,9 @@ function evolves(data, dataSprite, onClick) {
 				</Row>
 			);
 		}
-		console.log("3 poziomy ewolucji");
 	}
 }
 function Pokemon() {
-	const dispatch = useDispatch();
 	const location = useLocation();
 	const [error, setError] = useState(null);
 	const [dataPokemon, setDataPokemon] = useState([]);
@@ -366,6 +344,7 @@ function Pokemon() {
 	const navigate = useNavigate();
 	const fetchData = async () => {
 		try {
+			setIsLoaded(false);
 			const data = await fetch(url);
 			const listData = await data.json();
 			setDataPokemon(listData);
@@ -382,6 +361,7 @@ function Pokemon() {
 					if (e.evolves_to) {
 						return searchPokemonName(e);
 					}
+					return 0;
 				});
 			}
 			searchPokemonName(jsonEvolution.chain);
@@ -394,7 +374,6 @@ function Pokemon() {
 				});
 			setIsLoaded(true);
 		} catch (error) {
-			console.log("There was a SyntaxError", error);
 			setError(error);
 		}
 	};
@@ -421,9 +400,11 @@ function Pokemon() {
 
 		window.scrollTo(0, 0);
 	}
+
 	useEffect(() => {
 		fetchData();
 	}, [location.pathname]); // location.pathname - fix not re-renders when the current location is already a dynamic path (pokemon/:pokemonId)
+
 	if (error) {
 		return <div>Error: {error.message}</div>;
 	} else if (!isLoaded) {
