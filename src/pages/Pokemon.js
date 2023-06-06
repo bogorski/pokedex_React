@@ -28,7 +28,7 @@ function ItemStyle({ number }) {
 	}
 }
 
-function EvoCol({ className, xs, md, style, src, alt, onClick }) {
+function EvoCol({ className, xs, md, src, alt, onClick }) {
 	return (
 		<Col className={className} xs={xs} md={md}>
 			{
@@ -465,7 +465,11 @@ function Pokemon() {
 								sp={dataPokemon.stats[5].base_stat}
 							/>
 						</Col>
-						<Col className="text-center " xs={12} md={6}>
+						<Col
+							className="text-center "
+							xs={{ span: 12 }}
+							md={{ span: 4, offset: 1 }}
+						>
 							<ListGroup>
 								{dataPokemon.stats.map((type, i) => {
 									return (
