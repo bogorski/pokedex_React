@@ -16,3 +16,39 @@
 .speed {
 	background-color: #f9f871 !important;
 }
+
+.white {
+	color: white;
+}
+
+.backgroundLoader {
+	background-color: white;
+	height: 110vh;
+}
+
+.next-evolution-vertically::after {
+	content: "\02C5";
+	font-size: 4em;
+	display: block;
+	font-weight: bold;
+	color: white;
+}
+.next-evolution-horizontally::after {
+	content: "\02C3";
+	font-size: 4em;
+	font-weight: bold;
+	color: white;
+	position: absolute;
+	top: 0.5em;
+	right: 0;
+}
+.next-evolution-horizontally {
+	position: relative;
+}
+
+.evolutions {
+	background-image: url(../assets/images/110.jpg);
+}
+.background {
+	background-image: url(../assets/images/110.jpg);
+}

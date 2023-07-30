@@ -3,13 +3,16 @@ import { addPokemon } from "../redux/pokemonDataSlice";
 import { changeUrl } from "../redux/currentUrlSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { changeScroll } from "../redux/scrollTopSlice";
+import { changeValue } from "../redux/valueSearchSlice";
+import { changeLocationPathname } from "../redux/locationPathnameSlice";
 
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
@@ -33,17 +36,51 @@ function ItemStyle({ number }) {
 	}
 }
 
+function SearchComponent({ value, onChange, onClick }) {
+	return (
+		<Form>
+			<Form.Group className="mb-3" controlId="formBasicPassword">
+				<Form.Label>Search Pokemon</Form.Label>
+				<Form.Control
+					type="text"
+					placeholder="Number or name"
+					value={value}
+					onChange={onChange}
+				/>
+			</Form.Group>
+			<Button type="submit" onClick={onClick}>
+				Search
+			</Button>
+		</Form>
+	);
+}
+
 function Home() {
+	const location = useLocation();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const [error, setError] = useState(null);
 	const [onClickBtn, setOnClickBtn] = useState(false);
 	const [isLoaded, setIsLoaded] = useState(false);
+	//const [valueSearch, setValueSearch] = useState("");
+	const valueSearch = useSelector((state) => state.valueSearch.value);
 	const pokemonData = useSelector((state) => state.pokemonData.pokemon);
 	const currentUrl = useSelector((state) => state.currentUrl.valueCurrent);
 	const nextUrl = useSelector((state) => state.currentUrl.valueNext);
 	const valueScrollTop = useSelector((state) => state.scrollTop.value);
-
+	const locationPathname = useSelector((state) => state.locationPathname.value);
+	//console.log(valueSearch);
+	function handleSearch(e) {
+		console.log("search");
+		e.preventDefault();
+		dispatch(changeScroll(0));
+		navigate(`/pokemon/${valueSearch}`);
+	}
+	function handleChange(e) {
+		e.preventDefault();
+		dispatch(changeLocationPathname(location.pathname));
+		dispatch(changeValue(e.target.value));
+	}
 	function handleSubmit(e) {
 		const scrollTop = document.documentElement.scrollTop;
 		dispatch(changeScroll(scrollTop));
@@ -106,10 +143,14 @@ function Home() {
 			</div>
 		);
 	}
-
 	useEffect(() => {
+		console.log("useEffect");
 		pokemonData.length === 0 ? fetchData(currentUrl) : setIsLoaded(true);
-		window.scrollTo(0, valueScrollTop);
+		locationPathname !== location.pathname &&
+			window.scrollTo({
+				top: valueScrollTop,
+				behavior: "instant",
+			});
 	}, [fetchData]);
 
 	if (error) {
@@ -131,7 +172,16 @@ function Home() {
 	} else {
 		return (
 			<div>
-				<Container>
+				<Container fluid="xl">
+					<Row>
+						<Col xs={6}>
+							<SearchComponent
+								value={valueSearch}
+								onChange={handleChange}
+								onClick={handleSearch}
+							/>
+						</Col>
+					</Row>
 					<Row>
 						{pokemonData.map((data) => (
 							<Col

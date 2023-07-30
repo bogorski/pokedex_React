@@ -11,9 +11,18 @@ import ListGroup from "react-bootstrap/ListGroup";
 import ListGroupItem from "react-bootstrap/ListGroupItem";
 import RadarStats from "../components/Canvas";
 import "./Pokemon.css";
+import EvolutionComponent from "../components/EvolutionComponent";
+import Accordion from "react-bootstrap/Accordion";
+import Badge from "react-bootstrap/Badge";
+import { changeLocationPathname } from "../redux/locationPathnameSlice";
+import { useDispatch } from "react-redux";
 
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function decimalPoint(number) {
+	return number / 10;
 }
 
 function ItemStyle({ number }) {
@@ -28,316 +37,14 @@ function ItemStyle({ number }) {
 	}
 }
 
-function EvoCol({ className, xs, md, src, alt, onClick }) {
-	return (
-		<Col className={className} xs={xs} md={md}>
-			{
-				<Image
-					roundedCircle
-					style={{
-						maxWidth: "10em",
-						width: "60%",
-						backgroundColor: "#b0a8b9",
-						cursor: "pointer",
-					}}
-					src={src}
-					alt={alt}
-					onClick={onClick}
-				/>
-			}
-		</Col>
-	);
-}
-function evolves(data, dataSprite, onClick) {
-	const evoTab = []; // tablica rozgalezienia ewolucji 0 - brak, 1- jeden rodzaj ewolucji...
-
-	function evolvesTo(dataEvolves, tab) {
-		tab.push(dataEvolves.evolves_to.length);
-		if (dataEvolves.evolves_to) {
-			dataEvolves.evolves_to.map((evo) => {
-				return evolvesTo(evo, tab);
-			});
-		}
-	}
-
-	function evolve(data, tablica) {
-		if (data.evolves_to.length === 0) {
-			tablica.push({
-				evolve: false,
-				name: data.species.name,
-				sprite: dataSprite[0].sprites.other["official-artwork"].front_default,
-			});
-		} else {
-			tablica.push({
-				evolve: true,
-				name: data.species.name,
-				sprite: dataSprite[0].sprites.other["official-artwork"].front_default,
-			});
-			data.evolves_to.map((el, i) => {
-				if (el.evolves_to.length === 0) {
-					return tablica.push({
-						evolve: false,
-						name: el.species.name,
-						sprite:
-							dataSprite[i].sprites.other["official-artwork"].front_default,
-					});
-				} else {
-					return evolve(el, tablica);
-				}
-			});
-		}
-	}
-	const tablica = [];
-	evolve(data.chain, tablica);
-	evolvesTo(data.chain, evoTab);
-	let maxLevelEvolution = 1; // mogą być max 3 poziomy ewolucji
-	evoTab.map((el) => {
-		if (el > 0 && maxLevelEvolution < 3) {
-			return maxLevelEvolution++;
-		}
-		return 0;
-	});
-	if (maxLevelEvolution === 1) {
-		return (
-			<Row>
-				<EvoCol
-					className="text-center p-2"
-					xs={12}
-					src={dataSprite[0].sprites.other["official-artwork"].front_default}
-					alt={data.chain.species.name}
-					onClick={onClick}
-				/>
-			</Row>
-		);
-	} else if (maxLevelEvolution === 2) {
-		if (dataSprite.length <= 3) {
-			return (
-				<Row className="align-items-center">
-					<EvoCol
-						className="text-center p-2"
-						xs={12}
-						md={6}
-						src={dataSprite[0].sprites.other["official-artwork"].front_default}
-						alt={data.chain.species.name}
-						onClick={onClick}
-					/>
-					{dataSprite.length === 2 ? (
-						<EvoCol
-							className="text-center p-2"
-							xs={12}
-							md={6}
-							src={
-								dataSprite[1].sprites.other["official-artwork"].front_default
-							}
-							alt={data.chain.evolves_to[0].species.name}
-							onClick={onClick}
-						/>
-					) : (
-						<Col className="text-center p-2" xs={12} md={6}>
-							<Row>
-								{dataSprite.map((el, i) => {
-									if (i > 0) {
-										return (
-											<EvoCol
-												key={i}
-												className="text-center p-2"
-												xs={6}
-												md={12}
-												src={el.sprites.other["official-artwork"].front_default}
-												alt={el.species.name}
-												onClick={onClick}
-											/>
-										);
-									}
-									return 0;
-								})}
-							</Row>
-						</Col>
-					)}
-				</Row>
-			);
-		} else {
-			return (
-				<Row className="align-items-center">
-					<EvoCol
-						className="text-center p-2"
-						xs={12}
-						md={4}
-						src={dataSprite[0].sprites.other["official-artwork"].front_default}
-						alt={data.chain.species.name}
-						onClick={onClick}
-					/>
-					<Col className="text-center p-2" xs={12} md={8}>
-						{dataSprite.length % 2 === 0 ? (
-							<Row className="align-items-center">
-								{dataSprite.map((el, i) => {
-									if (i > 0 && i !== dataSprite.length - 1) {
-										return (
-											<EvoCol
-												key={i}
-												className="text-center p-2"
-												xs={6}
-												md={6}
-												src={el.sprites.other["official-artwork"].front_default}
-												alt={el.species.name}
-												onClick={onClick}
-											/>
-										);
-									}
-									if (i === dataSprite.length - 1) {
-										return (
-											<EvoCol
-												key={i}
-												className="text-center p-2"
-												xs={{ span: 6, offset: 3 }}
-												src={el.sprites.other["official-artwork"].front_default}
-												alt={el.species.name}
-												onClick={onClick}
-											/>
-										);
-									}
-									return 0;
-								})}
-							</Row>
-						) : (
-							<Row>
-								{dataSprite.map((el, i) => {
-									if (i > 0) {
-										return (
-											<EvoCol
-												key={i}
-												className="text-center p-2"
-												xs={6}
-												src={el.sprites.other["official-artwork"].front_default}
-												alt={el.species.name}
-												onClick={onClick}
-											/>
-										);
-									}
-									return 0;
-								})}
-							</Row>
-						)}
-					</Col>
-				</Row>
-			);
-		}
-	} else {
-		if (dataSprite.length === 3) {
-			return (
-				<Row>
-					{dataSprite.map((el, i) => {
-						return (
-							<EvoCol
-								key={i}
-								className="text-center p-2"
-								xs={12}
-								md={4}
-								src={el.sprites.other["official-artwork"].front_default}
-								alt={el.species.name}
-								onClick={onClick}
-							/>
-						);
-					})}
-				</Row>
-			);
-		} else {
-			return (
-				<Row className="align-items-center">
-					<EvoCol
-						className="text-center p-2"
-						xs={12}
-						md={4}
-						src={dataSprite[0].sprites.other["official-artwork"].front_default}
-						alt={data.chain.species.name}
-						onClick={onClick}
-					/>
-					<Col className="text-center p-2 " xs={12} md={8}>
-						{data.chain.evolves_to.length === 1 ? (
-							<Row className="align-items-center">
-								<EvoCol
-									className="text-center p-2"
-									xs={12}
-									md={6}
-									src={
-										dataSprite[1].sprites.other["official-artwork"]
-											.front_default
-									}
-									alt={data.chain.evolves_to[0].species.name}
-									onClick={onClick}
-								/>
-								<Col className="text-center p-2" xs={12} md={6}>
-									<Row>
-										{dataSprite.map((el, i) => {
-											if (i > 1) {
-												return (
-													<EvoCol
-														key={i}
-														className="text-center p-2"
-														xs={6}
-														md={12}
-														src={
-															el.sprites.other["official-artwork"].front_default
-														}
-														alt={el.species.name}
-														onClick={onClick}
-													/>
-												);
-											}
-											return 0;
-										})}
-									</Row>
-								</Col>
-							</Row>
-						) : (
-							<Row className="align-items-center">
-								{dataSprite.map((el, i) => {
-									if (i > 0 && evoTab[i] > 0) {
-										return (
-											<Col xs={6} md={12} key={i}>
-												<Row>
-													<EvoCol
-														className="text-center p-2"
-														xs={12}
-														md={6}
-														src={
-															el.sprites.other["official-artwork"].front_default
-														}
-														alt={el.species.name}
-														onClick={onClick}
-													/>
-													<EvoCol
-														className="text-center p-2"
-														xs={12}
-														md={6}
-														src={
-															dataSprite[i + 1].sprites.other[
-																"official-artwork"
-															].front_default
-														}
-														alt={dataSprite[i + 1].species.name}
-														onClick={onClick}
-													/>
-												</Row>
-											</Col>
-										);
-									}
-									return 0;
-								})}
-							</Row>
-						)}
-					</Col>
-				</Row>
-			);
-		}
-	}
-}
 function Pokemon() {
+	const dispatch = useDispatch();
 	const location = useLocation();
 	const [error, setError] = useState(null);
 	const [dataPokemon, setDataPokemon] = useState([]);
 	const [dataEvolution, setDataEvolution] = useState([]);
 	const [tabNameEvolution, setTabNameEvolution] = useState([]);
+	const [arrayAbility, setArrayAbility] = useState([]);
 	const [isLoaded, setIsLoaded] = useState(false);
 	const params = useParams();
 	const url = `https://pokeapi.co/api/v2/pokemon/${params.pokemonId}`;
@@ -348,11 +55,20 @@ function Pokemon() {
 			const data = await fetch(url);
 			const listData = await data.json();
 			setDataPokemon(listData);
+			setArrayAbility([]);
+			listData.abilities.map(async (obj) => {
+				if (obj.is_hidden === false) {
+					const dataAbilities = await fetch(obj.ability.url);
+					const jsonAbilitie = await dataAbilities.json();
+					setArrayAbility((oldArray) => [...oldArray, jsonAbilitie]);
+				}
+			});
+
 			const dataSpecies = await fetch(listData.species.url);
 			const jsonSpecies = await dataSpecies.json();
 			const dataEvolution = await fetch(jsonSpecies.evolution_chain.url);
 			const jsonEvolution = await dataEvolution.json();
-			setDataEvolution(jsonEvolution);
+			setDataEvolution(jsonEvolution.chain);
 			const tabName = [];
 			function searchPokemonName(data) {
 				let newUrl = data.species.url.replace("-species", "");
@@ -393,38 +109,68 @@ function Pokemon() {
 		navigate(`/`);
 	}
 	function handleDetail(name) {
-		if (name.target.alt !== params.pokemonId) {
+		if (
+			name.target.id !== params.pokemonId &&
+			name.target.alt !== params.pokemonId
+		) {
 			setIsLoaded(false);
-			navigate(`/pokemon/${name.target.alt}`);
+			navigate(`/pokemon/${name.target.id}`);
 		}
-
-		window.scrollTo(0, 0);
+		window.scrollTo({
+			top: 0,
+			behavior: "instant",
+		});
+	}
+	function AbilitiesComponent({ array }) {
+		return (
+			<>
+				<Accordion defaultActiveKey="0">
+					{array.map((el, i) => {
+						return (
+							<Accordion.Item key={i} eventKey={i}>
+								<Accordion.Header>{el.name}</Accordion.Header>
+								<Accordion.Body>
+									{el.effect_entries.map((lang) => {
+										return lang.language.name === "en" && lang.effect;
+									})}
+								</Accordion.Body>
+							</Accordion.Item>
+						);
+					})}
+				</Accordion>
+			</>
+		);
 	}
 
 	useEffect(() => {
 		fetchData();
+		dispatch(changeLocationPathname(location.pathname));
+		window.scrollTo({
+			top: 0,
+			behavior: "instant",
+		});
 	}, [location.pathname]); // location.pathname - fix not re-renders when the current location is already a dynamic path (pokemon/:pokemonId)
 
 	if (error) {
 		return <div>Error: {error.message}</div>;
 	} else if (!isLoaded) {
 		return (
-			<Spinner
-				animation="border"
-				role="status"
-				style={{
-					position: "fixed",
-					left: "50%",
-					top: "50%",
-				}}
-			>
-				<span className="visually-hidden">Loading...</span>
-			</Spinner>
+			<Container fluid="xl" className="backgroundLoader">
+				<Spinner
+					animation="border"
+					role="status"
+					style={{
+						position: "fixed",
+						left: "50%",
+						top: "50%",
+					}}
+				></Spinner>
+			</Container>
 		);
 	} else {
 		return (
 			<div>
-				<Container>
+				<Container fluid="xl">
 					<Nav className="justify-content-center">
 						<Nav.Item onClick={handlePrevious}>
 							<Nav.Link>Previous</Nav.Link>
@@ -439,11 +185,11 @@ function Pokemon() {
 					</Nav>
 					<Row>
 						<Col className="text-center">
-							<h1>{capitalizeFirstLetter(dataPokemon.name)}</h1>
+							<h1>{capitalizeFirstLetter(dataPokemon.species.name)}</h1>
 							<ItemStyle number={dataPokemon.id} />
 						</Col>
 					</Row>
-					<Row className="align-items-center p-3">
+					<Row className="align-items-start p-3">
 						<Col className="text-center">
 							<Image
 								style={{ width: "20rem" }}
@@ -453,8 +199,49 @@ function Pokemon() {
 								alt={dataPokemon.name}
 							/>
 						</Col>
+						<Col className="text-center">
+							<Row>
+								<Col
+									xs={{ span: 10, offset: 1 }}
+									className="border rounded-5 p-2"
+								>
+									<p className="h3 ">
+										Height: {decimalPoint(dataPokemon.height)}m
+									</p>
+									<p className="h3 ">
+										Weight: {decimalPoint(dataPokemon.weight)}kg
+									</p>
+									<p className="h3 ">Type</p>
+									<Row>
+										<Col xs={{ span: 8, offset: 2 }}>
+											<p className="h4">
+												{dataPokemon.types.map((type, i) => {
+													return (
+														<Badge
+															bg=""
+															key={i}
+															className={`mx-2 ${type.type.name}`}
+														>
+															{type.type.name}
+														</Badge>
+													);
+												})}
+											</p>
+										</Col>
+									</Row>
+								</Col>
+								<Col
+									xs={{ span: 10, offset: 1 }}
+									lg={{ span: 6, offset: 3 }}
+									className="py-5"
+								>
+									<AbilitiesComponent array={arrayAbility} />
+								</Col>
+							</Row>
+						</Col>
 					</Row>
-					<Row className="align-items-center p-5">
+					<Row className="align-items-center px-5  ">
+						<p className="h1 text-center">Stats</p>
 						<Col className="text-center" xs={12} md={6}>
 							<RadarStats
 								hp={dataPokemon.stats[0].base_stat}
@@ -466,7 +253,7 @@ function Pokemon() {
 							/>
 						</Col>
 						<Col
-							className="text-center "
+							className="text-center"
 							xs={{ span: 12 }}
 							md={{ span: 4, offset: 1 }}
 						>
@@ -474,31 +261,28 @@ function Pokemon() {
 								{dataPokemon.stats.map((type, i) => {
 									return (
 										<ListGroupItem className={type.stat.name} key={i}>
-											{type.stat.name} {type.base_stat}
+											<p className="h5">
+												{" "}
+												{type.stat.name} {type.base_stat}
+											</p>
 										</ListGroupItem>
 									);
 								})}
 							</ListGroup>
 						</Col>
 					</Row>
-					{/*<h1>HEIGHT {decimalPoint(dataPokemon.height)}m</h1>
-					<h1>WEIGHT {decimalPoint(dataPokemon.weight)}kg</h1>
-					{dataPokemon.types.map((type, i) => {
-						return <h1 key={i}>TYPE: {type.type.name}</h1>;
-					})}
-					{dataPokemon.abilities.map((type, i) => {
-						return <h1 key={i}>ABILITY {type.ability.name}</h1>;
-					})}
-					<img
-						src={dataPokemon.sprites.other["official-artwork"].front_default}
-						alt={dataPokemon.name}
-				/>*/}
-					<Row className="align-items-center p-1">
-						<Col xs={12} className="text-center pt-3 pb-2">
-							<h1>Ewolucje</h1>
-						</Col>
-						<Col xs={12}>
-							{evolves(dataEvolution, tabNameEvolution, handleDetail)}
+					<Row className="align-items-center px-5 py-5">
+						<Col
+							xs={12}
+							xl={{ span: 10, offset: 1 }}
+							className="text-center evolutions border rounded-5 "
+						>
+							<p className="h1 white">Evolutions</p>
+							<EvolutionComponent
+								dataPokemonEvolution={dataEvolution}
+								dataPokemon={tabNameEvolution}
+								onClick={handleDetail}
+							/>
 						</Col>
 					</Row>
 				</Container>
